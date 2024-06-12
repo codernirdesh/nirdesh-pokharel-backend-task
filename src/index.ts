@@ -3,6 +3,7 @@ import { APP_PORT } from "./constants";
 import UserRoute from "./routes/user.route";
 import errorMiddleware from "./middleware/error.middleware";
 import { loadEnvFile } from "node:process";
+import TaskRoute from "./routes/task.route";
 const app = express();
 
 // Load environment variables
@@ -18,6 +19,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // Routes
 app.use(UserRoute);
+app.use(TaskRoute);
 
 // Error handling middleware
 app.use(errorMiddleware);
