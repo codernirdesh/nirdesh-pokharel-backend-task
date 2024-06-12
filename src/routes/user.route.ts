@@ -5,6 +5,10 @@ import { CreateUserDto } from "../dto/create-user.dto";
 import { UserController } from "../controllers/user.controller";
 import { LoginDto } from "../dto/login.dto";
 import { authenticated } from "../middleware/auth.middleware";
+import { role } from "../middleware/role.middleware";
+import { Role } from "@prisma/client";
+import { ChangeRoleDto } from "../dto/change-role.dto";
+import { TaskController } from "../controllers/task.controller";
 
 const UserRoute = Router();
 
@@ -19,5 +23,30 @@ UserRoute.post(
 	UserController.login
 );
 UserRoute.get(`${API_V1_PREFIX}/user/me`, authenticated, UserController.me);
+UserRoute.get(
+	`${API_V1_PREFIX}/user/all`,
+	authenticated,
+	role(Role.ADMIN),
+	UserController.getAllUsers
+);
+UserRoute.get(
+	`${API_V1_PREFIX}/user/:id`,
+	authenticated,
+	role(Role.ADMIN),
+	UserController.getUserById
+);
+UserRoute.get(
+	`${API_V1_PREFIX}/user/:id/tasks`,
+	authenticated,
+	role(Role.ADMIN),
+	TaskController.getTaskByUser
+);
+UserRoute.patch(
+	`${API_V1_PREFIX}/user/change-role`,
+	authenticated,
+	role(Role.ADMIN),
+	validationMiddleware(ChangeRoleDto),
+	UserController.changeRole
+);
 
 export default UserRoute;
