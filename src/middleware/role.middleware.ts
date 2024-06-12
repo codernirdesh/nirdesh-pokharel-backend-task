@@ -6,7 +6,7 @@ import { Role } from "@prisma/client";
 
 export function role(role: Role) {
 	return function (req: RequestWithUser, res: Response, next: NextFunction) {
-		if (req.user.role !== role) {
+		if (!req.user || req.user?.role !== role) {
 			throw CustomError(StatusCodes.FORBIDDEN, "Forbidden", null);
 		}
 
