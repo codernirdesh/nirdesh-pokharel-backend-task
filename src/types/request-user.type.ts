@@ -1,3 +1,6 @@
 import { JWTPayload } from "./jwt.payload";
+import { Request } from "express";
 
-export type RequestWithUser = Request & { user: JWTPayload };
+export interface RequestWithUser extends Request {
+	user?: JWTPayload;
+}
