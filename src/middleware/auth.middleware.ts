@@ -9,7 +9,7 @@ export function authenticated(
 	res: Response,
 	next: NextFunction
 ) {
-	const token = req.headers.get("authorization")?.split(" ")[1];
+	const token = req.header("authorization")?.split(" ")[1];
 	if (!token) {
 		throw CustomError(StatusCodes.UNAUTHORIZED, "Unauthorized", null);
 	}
