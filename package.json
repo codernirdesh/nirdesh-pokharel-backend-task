@@ -1,0 +1,17 @@
+{
+  "name": "nirdesh-pokharel-backend-task",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": ""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.4.0",
+    "eslint": "9.x",
+    "globals": "^15.4.0",
+    "typescript-eslint": "^7.13.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
