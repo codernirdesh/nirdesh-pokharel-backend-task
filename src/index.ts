@@ -2,12 +2,12 @@ import express, { Request, Response } from "express";
 import { APP_PORT } from "./constants";
 import UserRoute from "./routes/user.route";
 import errorMiddleware from "./middleware/error.middleware";
-import { loadEnvFile } from "node:process";
 import TaskRoute from "./routes/task.route";
+import { config } from "dotenv";
 const app = express();
 
 // Load environment variables
-loadEnvFile();
+config();
 
 // Using expresses built-in middleware to parse incoming requests with JSON payloads
 app.use(express.json());
