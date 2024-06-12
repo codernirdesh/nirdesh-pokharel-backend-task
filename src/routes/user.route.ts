@@ -4,6 +4,7 @@ import { validationMiddleware } from "../middleware/validation.middleware";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UserController } from "../controllers/user.controller";
 import { LoginDto } from "../dto/login.dto";
+import { authenticated } from "../middleware/auth.middleware";
 
 const UserRoute = Router();
 
@@ -17,5 +18,6 @@ UserRoute.post(
 	validationMiddleware(LoginDto),
 	UserController.login
 );
+UserRoute.get(`${API_V1_PREFIX}/user/me`, authenticated, UserController.me);
 
 export default UserRoute;

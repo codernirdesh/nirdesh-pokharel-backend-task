@@ -7,6 +7,7 @@ import { CustomError } from "../helpers/error.helper";
 import { StatusCodes } from "http-status-codes";
 import { JWTHelper } from "../helpers/jwt.helper";
 import { LoginDto } from "../dto/login.dto";
+import { RequestWithUser } from "../types/request-user.type";
 
 export class UserController {
 	public static async register(
@@ -111,6 +112,25 @@ export class UserController {
 				message: "User logged in successfully",
 				data: {
 					token,
+				},
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async me(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const user = req.user;
+		try {
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				message: "User details",
+				data: {
+					user,
 				},
 			});
 		} catch (error) {
