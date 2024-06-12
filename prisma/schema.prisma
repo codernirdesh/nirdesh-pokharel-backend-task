@@ -21,7 +21,7 @@ enum Role {
 model user {
   id        String   @id @default(uuid())
   email     String   @unique
-  name      String?
+  name      String
   role      Role     @default(USER)
   password  String
   createdAt DateTime @default(now())
