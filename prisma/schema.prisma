@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -19,11 +20,32 @@ enum Role {
 }
 
 model user {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  role      Role     @default(USER)
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  role          Role     @default(USER)
+  password      String
+  tasks         Task[]   @relation("assigned_to")
+  created_tasks Task[]   @relation("created_by")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(OPEN)
+  creatorId   String
+  creator     user       @relation("created_by", fields: [creatorId], references: [id])
+  assignedId  String
+  assigned    user       @relation("assigned_to", fields: [assignedId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
