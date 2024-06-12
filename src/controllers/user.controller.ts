@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { CustomError } from "../helpers/error.helper";
 import { StatusCodes } from "http-status-codes";
 import { JWTHelper } from "../helpers/jwt.helper";
+import { LoginDto } from "../dto/login.dto";
 
 export class UserController {
 	public static async register(
@@ -67,6 +68,47 @@ export class UserController {
 			return res.status(StatusCodes.CREATED).json({
 				status: "success",
 				message: "User registered successfully",
+				data: {
+					token,
+				},
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async login(req: Request, res: Response, next: NextFunction) {
+		const { email, password } = req.body as LoginDto;
+		try {
+			const user = await prisma.user.findUnique({
+				where: {
+					email,
+				},
+			});
+
+			if (!user) {
+				throw CustomError(StatusCodes.NOT_FOUND, "User not found", null);
+			}
+
+			const isPasswordMatched = await bcrypt.compare(password, user.password);
+
+			if (!isPasswordMatched) {
+				throw CustomError(
+					StatusCodes.UNAUTHORIZED,
+					"Invalid credentials",
+					null
+				);
+			}
+
+			const token = JWTHelper.generateToken({
+				userId: user.id,
+				email: user.email,
+				role: user.role,
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				message: "User logged in successfully",
 				data: {
 					token,
 				},
