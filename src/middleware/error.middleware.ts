@@ -9,7 +9,7 @@ const errorMiddleware = (
 ) => {
 	const statusCode = err.statusCode || 500;
 	const errorMessage = err.message || "Something went wrong";
-	const data = err.data || [];
+	const data = err.data || null;
 	return res.status(statusCode).send({ message: errorMessage, data });
 };
 

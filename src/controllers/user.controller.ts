@@ -8,6 +8,7 @@ import { StatusCodes } from "http-status-codes";
 import { JWTHelper } from "../helpers/jwt.helper";
 import { LoginDto } from "../dto/login.dto";
 import { RequestWithUser } from "../types/request-user.type";
+import { ChangeRoleDto } from "../dto/change-role.dto";
 
 export class UserController {
 	public static async register(
@@ -126,12 +127,92 @@ export class UserController {
 	) {
 		const user = req.user;
 		try {
+			const currentUser = await prisma.user.findUnique({
+				where: {
+					id: user!.userId,
+				},
+				omit: {
+					password: true,
+				},
+			});
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				message: "User details",
-				data: {
-					user,
+				data: currentUser,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async getAllUsers(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		try {
+			const users = await prisma.user.findMany({
+				omit: {
+					password: true,
 				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: users,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async getUserById(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		try {
+			const user = await prisma.user.findUnique({
+				where: {
+					id,
+				},
+				omit: {
+					password: true,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: user,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async changeRole(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id, role } = req.body as ChangeRoleDto;
+		try {
+			const updatedUser = await prisma.user.update({
+				where: {
+					id,
+				},
+				data: {
+					role,
+				},
+				omit: {
+					password: true,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: updatedUser,
 			});
 		} catch (error) {
 			next(error);
