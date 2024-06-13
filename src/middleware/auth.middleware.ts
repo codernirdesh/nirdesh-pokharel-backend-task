@@ -9,7 +9,10 @@ export function authenticated(
 	res: Response,
 	next: NextFunction
 ) {
-	const token = req.header("authorization")?.split(" ")[1];
+	const bearerToken = req.header("authorization")?.split(" ")[1];
+	const cookieToken = req.cookies.token;
+	const token = bearerToken || cookieToken;
+
 	if (!token) {
 		throw CustomError(StatusCodes.UNAUTHORIZED, "Unauthorized", null);
 	}

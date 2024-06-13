@@ -108,6 +108,13 @@ export class UserController {
 				role: user.role,
 			});
 
+			res.cookie("token", token, {
+				httpOnly: true,
+				expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+				maxAge: 24 * 60 * 60 * 1000, // 24 hours
+				sameSite: "strict", // CSRF protection
+			});
+
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				message: "User logged in successfully",
