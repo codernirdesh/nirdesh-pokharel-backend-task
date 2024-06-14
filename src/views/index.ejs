@@ -75,6 +75,7 @@
 									</button>
 									<button
 										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										onclick="deleteTask('<%= task.id %>')"
 										type="button">
 										Delete
 									</button>
@@ -141,6 +142,7 @@
 									</button>
 									<button
 										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										onclick="deleteTask('<%= task.id %>')"
 										type="button">
 										Delete
 									</button>
@@ -207,6 +209,7 @@
 									</button>
 									<button
 										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										onclick="deleteTask('<%= task.id %>')"
 										type="button">
 										Delete
 									</button>
@@ -251,6 +254,7 @@
 			</div>
 		</div>
 		<% if (me.role==="ADMIN") { %>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script>
 			// When the user hovers over a task, select div with id `action-buttons` which
 			// contains edit and delete button
@@ -270,6 +274,32 @@
 						.removeClass("absolute top-0 right-0 mt-2 mr-2");
 				}
 			);
+
+			// Function to delete a task
+			function deleteTask(taskId) {
+				Swal.fire({
+					title: "Are you sure?",
+					text: "You won't be able to revert this!",
+					icon: "warning",
+					showCancelButton: true,
+					confirmButtonColor: "#3085d6",
+					cancelButtonColor: "#d33",
+					confirmButtonText: "Yes, delete it!",
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$.ajax({
+							url: `api/v1/task/${taskId}`,
+							type: "DELETE",
+							success: function (response) {
+								location.reload();
+							},
+							error: function (response) {
+								location.reload();
+							},
+						});
+					}
+				});
+			}
 		</script>
 		<% } %>
 		<script>

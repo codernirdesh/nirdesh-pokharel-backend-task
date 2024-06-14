@@ -37,5 +37,10 @@ TaskRoute.put(
 	authenticated,
 	TaskController.changeStatus
 );
+TaskRoute.delete(
+	`${API_V1_PREFIX}/task/:id`,
+	authenticated,
+	TaskController.deleteTask
+);
 
 export default TaskRoute;

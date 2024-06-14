@@ -250,4 +250,36 @@ export class TaskController {
 			next(error);
 		}
 	}
+
+	public static async deleteTask(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		try {
+			const taskExists = await prisma.task.findUnique({
+				where: {
+					id,
+				},
+			});
+
+			if (!taskExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "Task not found", null);
+			}
+
+			await prisma.task.delete({
+				where: {
+					id,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: null,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 }
