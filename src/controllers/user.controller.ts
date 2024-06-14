@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CreateUserDto } from "../dto/create-user.dto";
+import { CreateUserDto, UpdateUserDto } from "../dto/create-user.dto";
 import bcrypt from "bcryptjs";
 import prisma from "../prisma.client";
 import { Role } from "@prisma/client";
@@ -330,6 +330,55 @@ export class UserController {
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				data: userExists,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async updateUser(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		const { name, email, role, password } = req.body as UpdateUserDto;
+		try {
+			const userExists = await prisma.user.findUnique({
+				where: {
+					id,
+				},
+			});
+
+			if (!userExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "User not found", null);
+			}
+
+			// Hash password
+			let hashedPassword;
+			if (password) {
+				const generatedSalt = await bcrypt.genSalt(10);
+				hashedPassword = await bcrypt.hash(password, generatedSalt);
+			}
+
+			const user = await prisma.user.update({
+				where: {
+					id,
+				},
+				data: {
+					name,
+					email,
+					role,
+					password: hashedPassword,
+				},
+				omit: {
+					password: true,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: user,
 			});
 		} catch (error) {
 			next(error);

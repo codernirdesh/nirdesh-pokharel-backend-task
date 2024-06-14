@@ -29,7 +29,7 @@ export class CreateTaskDto {
 
 	@IsEnum(TaskStatus)
 	@IsOptional()
-	status: TaskStatus = TaskStatus.OPEN;
+	status: string;
 
 	@IsUUID(4, {
 		message: "Assigned ID must be a valid UUID",

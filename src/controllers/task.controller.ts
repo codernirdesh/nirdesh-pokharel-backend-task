@@ -96,7 +96,8 @@ export class TaskController {
 		next: NextFunction
 	) {
 		const { id } = req.params;
-		const { title, description } = req.body as Partial<CreateTaskDto>;
+		const { title, description, status, assignedId } =
+			req.body as Partial<CreateTaskDto>;
 		try {
 			const taskExists = await prisma.task.findUnique({
 				where: {
@@ -107,13 +108,14 @@ export class TaskController {
 			if (!taskExists) {
 				throw CustomError(StatusCodes.NOT_FOUND, "Task not found", null);
 			}
-
 			const task = await prisma.task.update({
 				where: {
 					id,
 				},
 				data: {
 					title,
+					status: (status ? status : taskExists.status) as TaskStatus,
+					assignedId,
 					description,
 				},
 			});

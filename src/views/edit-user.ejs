@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+		<script
+			src="https://code.jquery.com/jquery-3.7.1.min.js"
+			integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+			crossorigin="anonymous"></script>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body>
+		<!-- A Home Page for Task Management -->
+		<div class="flex items-center justify-center min-h-screen bg-gray-100">
+			<div class="w-full max-w-md">
+				<a
+					href="/users"
+					class="text-gray-500 hover:text-gray-700 text-sm font-semibold"
+					><< Back</a
+				>
+				<form
+					class="bg-white shadow-md rounded px-8 pt-6 pb-8 mt-4 mb-4"
+					action="">
+					<!-- Name, Email, role (ADMIN, USER), password -->
+					<div class="mb-4">
+						<label class="block text-gray-700 text-sm font-bold mb-2" for="name"
+							>Name</label
+						>
+						<input
+							class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="name"
+							value="<%= user.name %>"
+							type="text"
+							placeholder="Name" />
+						<span id="nameError" class="text-red-500 text-xs italic"></span>
+					</div>
+
+					<div class="mb-4">
+						<label
+							class="block text-gray-700 text-sm font-bold mb-2"
+							for="email"
+							>Email</label
+						>
+						<input
+							class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="email"
+							value="<%= user.email %>"
+							type="email"
+							placeholder="Email" />
+						<span id="emailError" class="text-red-500 text-xs italic"></span>
+					</div>
+
+					<div class="mb-4">
+						<label class="block text-gray-700 text-sm font-bold mb-2" for="role"
+							>Role</label
+						>
+						<select
+							class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="role">
+							<% ['USER', 'ADMIN'].forEach(function(roleOption) { %>
+								<option value="<%= roleOption %>" <%= user.role === roleOption ? 'selected' : '' %>><%= roleOption %></option>
+							<% }); %>
+						</select>
+						<span id="roleError" class="text-red-500 text-xs italic"></span>
+					</div>
+
+					<div class="mb-4">
+						<label
+							class="block text-gray-700 text-sm font-bold mb-2"
+							for="password"
+							>Password</label
+						>
+						<input
+							class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="password"
+							type="password"
+							placeholder="(Unchanged)" />
+						<span id="passwordError" class="text-red-500 text-xs italic"></span>
+					</div>
+
+					<div class="flex items-center justify-between">
+						<button
+							id="addUserBtn"
+							class="bg-gray-600 w-full hover:bg-gray-700 text-white text-sm font-semi py-2 px-6 rounded focus:outline-none focus:shadow-outline"
+							type="button">
+							Save
+						</button>
+					</div>
+				</form>
+				<div
+					id="status"
+					class="hidden transition duration-200 ease-in-out rounded text-center font-semibold w-full min-h-12 mb-4"></div>
+				<p class="text-center text-gray-500 text-xs">
+					&copy;2024 Nirdesh Pokharel. All rights reserved.
+				</p>
+			</div>
+		</div>
+		<script>
+			function validateForm() {
+				const name = $("#name").val();
+				const email = $("#email").val();
+				const role = $("#role").val();
+				const password = $("#password").val();
+
+				// Clear all error messages
+				$("#nameError").text("");
+				$("#emailError").text("");
+				$("#roleError").text("");
+				$("#passwordError").text("");
+
+				let isValid = true;
+
+				if (!name || name.length < 6) {
+					$("#nameError").text(
+						"Name is required and must be at least 6 characters long."
+					);
+					isValid = false;
+				}
+
+				if (!email || !email.includes("@")) {
+					$("#emailError").text(
+						"Email is required and must be a valid email address."
+					);
+					isValid = false;
+				}
+
+				if (!role || (role !== "USER" && role !== "ADMIN")) {
+					$("#roleError").text(
+						"Role is required and must be either USER or ADMIN."
+					);
+					isValid = false;
+				}
+
+				if (password && password.length < 6) {
+					$("#passwordError").text(
+						"Password is required and must be at least 6 characters long."
+					);
+					isValid = false;
+				}
+
+				return isValid;
+			}
+
+			$(document).ready(function () {
+				$("#addUserBtn").click(function () {
+					if (!validateForm()) {
+						console.error("Invalid Form");
+					} else {
+						const name = $("#name").val();
+						const email = $("#email").val();
+						const role = $("#role").val();
+						const password = $("#password").val();
+
+						$.ajax({
+							url: "/api/v1/user/<%= user.id %>",
+							method: "PUT",
+							contentType: "application/json",
+							data: JSON.stringify({ name, email, role, password }),
+							success: function (response) {
+								$("#status")
+									.removeClass("hidden")
+									.addClass("flex items-center justify-center bg-green-500")
+									.text("User updated successfully.");
+
+								// Hide the status message after 2 seconds
+								setTimeout(() => {
+									$("#status")
+										.addClass("hidden")
+										.removeClass(
+											"flex items-center justify-center bg-green-500"
+										);
+										window.location.href = "/users";
+								}, 2000);
+							},
+							error: function (error) {
+								$("#status")
+									.removeClass("hidden")
+									.addClass("flex items-center justify-center bg-red-500")
+									.text("Failed to update user.");
+							},
+						});
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

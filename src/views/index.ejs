@@ -68,11 +68,11 @@
 								<!-- Edit and Delete Button -->
 								<% if (me.role==="ADMIN") { %>
 								<div id="action-buttons" class="hidden">
-									<button
-										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
-										type="button">
+									<a
+										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline mr-1"
+										href="/edit-task/<%= task.id %>">
 										Edit
-									</button>
+									</a>
 									<button
 										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
 										onclick="deleteTask('<%= task.id %>')"
@@ -87,8 +87,14 @@
 									</h3>
 									<% if (me.role==="ADMIN") { %>
 									<span class="text-sm text-gray-600 font-medium"
-										><%= task.createdAt %> by <%= task.creator.name %></span
+										><%= task.createdAt %></span
+									><br/>
+									<span class="text-sm text-gray-600 font-medium"
+										><b class="font-semibold">By : </b><%= task.creator.name %>
+										<b class="font-semibold">   To : </b><%= task.assigned.name
+										%></span
 									>
+									<hr class=""/>
 									<% } else { %>
 									<span class="text-sm text-gray-600"
 										><%= task.createdAt %></span
@@ -135,11 +141,11 @@
 								<!-- Edit and Delete Button -->
 								<% if (me.role==="ADMIN") { %>
 								<div id="action-buttons" class="hidden">
-									<button
-										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
-										type="button">
+									<a
+										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline mr-1"
+										href="/edit-task/<%= task.id %>">
 										Edit
-									</button>
+									</a>
 									<button
 										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
 										onclick="deleteTask('<%= task.id %>')"
@@ -154,8 +160,14 @@
 									</h3>
 									<% if (me.role==="ADMIN") { %>
 									<span class="text-sm text-gray-600 font-medium"
-										><%= task.createdAt %> by <%= task.creator.name %></span
+										><%= task.createdAt %></span
+									><br/>
+									<span class="text-sm text-gray-600 font-medium"
+										><b class="font-semibold">By : </b><%= task.creator.name %>
+										<b class="font-semibold">   To : </b><%= task.assigned.name
+										%></span
 									>
+									<hr class=""/>
 									<% } else { %>
 									<span class="text-sm text-gray-600"
 										><%= task.createdAt %></span
@@ -202,11 +214,11 @@
 								<!-- Edit and Delete Button -->
 								<% if (me.role==="ADMIN") { %>
 								<div id="action-buttons" class="hidden">
-									<button
-										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
-										type="button">
+									<a
+										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline mr-1"
+										href="/edit-task/<%= task.id %>">
 										Edit
-									</button>
+									</a>
 									<button
 										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
 										onclick="deleteTask('<%= task.id %>')"
@@ -221,8 +233,14 @@
 									</h3>
 									<% if (me.role==="ADMIN") { %>
 									<span class="text-sm text-gray-600 font-medium"
-										><%= task.createdAt %> by <%= task.creator.name %></span
+										><%= task.createdAt %></span
+									><br/>
+									<span class="text-sm text-gray-600 font-medium"
+										><b class="font-semibold">By : </b><%= task.creator.name %>
+										<b class="font-semibold">   To : </b><%= task.assigned.name
+										%></span
 									>
+									<hr class=""/>
 									<% } else { %>
 									<span class="text-sm text-gray-600"
 										><%= task.createdAt %></span

@@ -23,6 +23,12 @@ RenderRoute.get(
 	RenderController.addTaskPage
 );
 RenderRoute.get(
+	"/edit-task/:id",
+	authenticatedUI,
+	roleUi("ADMIN"),
+	RenderController.editTaskPage
+);
+RenderRoute.get(
 	"/users",
 	authenticatedUI,
 	roleUi("ADMIN"),
@@ -33,6 +39,12 @@ RenderRoute.get(
 	authenticatedUI,
 	roleUi("ADMIN"),
 	RenderController.addUserPage
+);
+RenderRoute.get(
+	"/edit-user/:id",
+	authenticatedUI,
+	roleUi("ADMIN"),
+	RenderController.editUserPage
 );
 
 export default RenderRoute;

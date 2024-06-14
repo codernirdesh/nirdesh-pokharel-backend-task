@@ -20,6 +20,12 @@ export class RenderController {
 					name: true,
 				},
 			},
+			assigned: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
 		};
 
 		const open = await prisma.task.findMany({
@@ -91,12 +97,25 @@ export class RenderController {
 
 	public static async addTaskPage(req: RequestWithUser, res: Response) {
 		const user = req.user!;
-		const users = await prisma.user.findMany({
+		const users = await prisma.user.findMany();
+		res.render("add-task", { title: "Add Task", users, me: user });
+	}
+	public static async editTaskPage(req: RequestWithUser, res: Response) {
+		const user = req.user!;
+		const { id } = req.params;
+		const task = await prisma.task.findUnique({
 			where: {
-				role: "USER",
+				id: id,
 			},
 		});
-		res.render("add-task", { title: "Add Task", users, me: user });
+		if (!task) {
+			res.status(404).render("errors/404", {
+				message: "The task you are looking for does not exist.",
+			});
+			return;
+		}
+		const users = await prisma.user.findMany();
+		res.render("edit-task", { title: "Edit Task", users, me: user, task });
 	}
 
 	public static async userManagementPage(req: RequestWithUser, res: Response) {
@@ -105,6 +124,9 @@ export class RenderController {
 			omit: {
 				password: true,
 			},
+			orderBy: {
+				createdAt: "asc",
+			}
 		});
 
 		const me = await prisma.user.findUnique({
@@ -138,5 +160,34 @@ export class RenderController {
 			},
 		});
 		res.render("add-user", { title: "Add User", me });
+	}
+	public static async editUserPage(req: RequestWithUser, res: Response) {
+		const user = req.user!;
+		const { id } = req.params;
+		const userToEdit = await prisma.user.findUnique({
+			where: {
+				id: id,
+			},
+			omit: {
+				password: true,
+			},
+		});
+
+		if (!userToEdit) {
+			res.status(404).render("errors/404", {
+				message: "The user you are looking for does not exist.",
+			});
+			return;
+		}
+
+		const me = await prisma.user.findUnique({
+			where: {
+				id: user.userId,
+			},
+			omit: {
+				password: true,
+			},
+		});
+		res.render("edit-user", { title: "Edit User", me, user: userToEdit });
 	}
 }
