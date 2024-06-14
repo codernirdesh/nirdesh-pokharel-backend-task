@@ -18,6 +18,13 @@ UserRoute.post(
 	UserController.register
 );
 UserRoute.post(
+	`${API_V1_PREFIX}/user/register`,
+	validationMiddleware(CreateUserDto),
+	authenticated,
+	role(Role.ADMIN),
+	UserController.registerByAdmin
+);
+UserRoute.post(
 	`${API_V1_PREFIX}/login`,
 	validationMiddleware(LoginDto),
 	UserController.login

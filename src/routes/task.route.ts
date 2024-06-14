@@ -4,6 +4,8 @@ import { authenticated } from "../middleware/auth.middleware";
 import { role } from "../middleware/role.middleware";
 import { Role } from "@prisma/client";
 import { API_V1_PREFIX } from "../constants";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import { ChangeStatusDto } from "../dto/change-status";
 
 const TaskRoute = Router();
 
@@ -28,6 +30,12 @@ TaskRoute.get(
 	`${API_V1_PREFIX}/task/:id`,
 	authenticated,
 	TaskController.getTaskById
+);
+TaskRoute.put(
+	`${API_V1_PREFIX}/task/:id`,
+	validationMiddleware(ChangeStatusDto),
+	authenticated,
+	TaskController.changeStatus
 );
 
 export default TaskRoute;

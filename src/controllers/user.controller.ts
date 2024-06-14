@@ -78,6 +78,63 @@ export class UserController {
 			next(error);
 		}
 	}
+	public static async registerByAdmin(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) {
+		const { name, email, password, role } = req.body as CreateUserDto;
+		try {
+			// Check if the user already exists or not.
+			const userExists = await prisma.user.findUnique({
+				where: {
+					email,
+				},
+			});
+
+			if (userExists) {
+				throw CustomError(StatusCodes.CONFLICT, "User already exists", null);
+			}
+
+			// Hash password
+			const generatedSalt = await bcrypt.genSalt(10);
+			const hashedPassword = await bcrypt.hash(password, generatedSalt);
+
+			const user = await prisma.$transaction(async (tx) => {
+				// Save user to database
+				let user = await prisma.user.create({
+					data: {
+						name,
+						email,
+						password: hashedPassword,
+						role: role || Role.USER,
+					},
+					select: {
+						id: true,
+						name: true,
+						email: true,
+					},
+				});
+				return user;
+			});
+
+			if (!user) {
+				throw CustomError(
+					StatusCodes.INTERNAL_SERVER_ERROR,
+					"Something went wrong. Please try again later.",
+					null
+				);
+			}
+
+			return res.status(StatusCodes.CREATED).json({
+				status: "success",
+				message: "User registered successfully",
+				data: user,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 
 	public static async login(req: Request, res: Response, next: NextFunction) {
 		const { email, password } = req.body as LoginDto;
