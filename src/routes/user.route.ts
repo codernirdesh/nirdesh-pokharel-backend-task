@@ -55,5 +55,11 @@ UserRoute.patch(
 	validationMiddleware(ChangeRoleDto),
 	UserController.changeRole
 );
+UserRoute.delete(
+	`${API_V1_PREFIX}/user/:id`,
+	authenticated,
+	role(Role.ADMIN),
+	UserController.deleteUser
+);
 
 export default UserRoute;

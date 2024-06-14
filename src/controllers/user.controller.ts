@@ -282,4 +282,57 @@ export class UserController {
 			next(error);
 		}
 	}
+
+	public static async deleteUser(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		const user = req.user!;
+		try {
+			// usercannot remove self
+			if (id === user.userId) {
+				throw CustomError(
+					StatusCodes.FORBIDDEN,
+					"You cannot delete yourself",
+					null
+				);
+			}
+			// check if the user exists or not.
+			const userExists = await prisma.user.findUnique({
+				where: {
+					id,
+				},
+				omit: { password: true },
+			});
+			if (!userExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "User not found", null);
+			}
+			await prisma.$transaction(async (tx) => {
+				// assign all tasks to current user
+				await tx.task.updateMany({
+					where: {
+						assignedId: id,
+					},
+					data: {
+						assignedId: user.userId,
+					},
+				});
+
+				await tx.user.delete({
+					where: {
+						id,
+					},
+				});
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: userExists,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 }
