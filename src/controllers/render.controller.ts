@@ -117,7 +117,12 @@ export class RenderController {
 		});
 		res.render("user-management", {
 			title: "User Management",
-			users,
+			users: users.map((user) => {
+				return {
+					...user,
+					createdAt: user.createdAt.toISOString().split("T")[0],
+				};
+			}),
 			me,
 		});
 	}
