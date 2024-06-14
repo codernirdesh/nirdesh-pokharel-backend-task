@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title><%= title %></title>
+		<script
+			src="https://code.jquery.com/jquery-3.7.1.min.js"
+			integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+			crossorigin="anonymous"></script>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body>
+		<!-- A Home Page for Task Management which displays all the tasks the user has.
+-->
+		<div class="flex justify-center p-4 min-h-screen bg-gray-100">
+			<!-- Three column Grid -->
+			<div class="w-full max-w-6xl">
+				<!-- Title -->
+				<div class="flex items-center justify-between mb-4">
+					<h1 class="text-3xl font-bold text-gray-800">Task Management</h1>
+					<div class="flex items-center justify-end">
+						<span class="text-gray-700 text-sm mr-2"
+							>Welcome,
+							<b class="font-bold"><%= me.name %> (<%= me.email %>)</b>
+						</span>
+						<a
+							href="/logout"
+							class="bg-red-600 hover:bg-red-700 text-white text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline">
+							Logout
+						</a>
+					</div>
+				</div>
+
+				<% if (me.role==="ADMIN") { %>
+				<!-- Add Task & User button -->
+				<div class="flex items-center justify-start mb-4">
+					<a
+						href="/users"
+						class="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semi py-2 px-6 rounded focus:outline-none focus:shadow-outline mr-2">
+						User Management
+					</a>
+					<a
+						href="/add-task"
+						class="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semi py-2 px-6 rounded focus:outline-none focus:shadow-outline">
+						Add Task
+					</a>
+				</div>
+				<% } %>
+				<div class="grid grid-cols-3 gap-4 h-5/6">
+					<div class="bg-white shadow-md rounded pb-8 mb-4">
+						<div class="flex h-1 bg-blue-400 mb-6"></div>
+						<h2
+							class="text-xl font-bold text-gray-800 mb-4 px-4 tracking-tighter">
+							Open Tasks
+							<span
+								class="px-3 py-1 ml-2 text-sm bg-blue-600 text-white rounded-sm"
+								><%= open.length %></span
+							>
+						</h2>
+						<hr class="mb-4" />
+						<ul id="open-tasks" class="list-none list-inside px-4">
+							<!-- task has title, description and status -->
+							<% open.forEach(task => { %>
+							<li
+								id="<%= task.id %>"
+								class="mb-2 px-4 py-3 shadow-sm rounded hover:shadow-md transition-all duration-150 ease-in-out border border-blue-300 relative">
+								<!-- Edit and Delete Button -->
+								<% if (me.role==="ADMIN") { %>
+								<div id="action-buttons" class="hidden">
+									<button
+										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button">
+										Edit
+									</button>
+									<button
+										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button">
+										Delete
+									</button>
+								</div>
+								<% } %>
+								<div id="blur">
+									<h3 class="text-md font-semibold tracking-tight">
+										<%= task.title %>
+									</h3>
+									<% if (me.role==="ADMIN") { %>
+									<span class="text-sm text-gray-600 font-medium"
+										><%= task.createdAt %> by <%= task.creator.name %></span
+									>
+									<% } else { %>
+									<span class="text-sm text-gray-600"
+										><%= task.createdAt %></span
+									>
+									<% } %>
+									<p class="text-gray-700 mb-3 tracking-tight">
+										<%= task.description %>
+									</p>
+								</div>
+								<div class="flex w-full items-center justify-between">
+									<button
+										class="bg-green-200 hover:bg-green-300 text-gray-700 text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button"
+										onclick="moveToStatus('<%= task.id %>', 'DONE')">
+										Done >>
+									</button>
+									<button
+										class="bg-pink-200 hover:bg-pink-300 text-gray-600 text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button"
+										onclick="moveToStatus('<%= task.id %>', 'IN_PROGRESS')">
+										In Progress >>
+									</button>
+								</div>
+							</li>
+							<% }) %>
+						</ul>
+					</div>
+					<div class="bg-white shadow-md rounded pb-8 mb-4">
+						<div class="flex h-1 bg-pink-400 mb-6"></div>
+						<h2
+							class="text-xl font-bold text-gray-800 mb-4 px-4 tracking-tighter">
+							In Progress Tasks
+							<span
+								class="px-3 py-1 ml-2 text-sm bg-pink-600 text-white rounded-sm"
+								><%= pending.length %></span
+							>
+						</h2>
+						<hr class="mb-4" />
+						<ul id="pending-tasks" class="list-none list-inside px-4">
+							<% pending.forEach(task => { %>
+							<li
+								id="<%= task.id %>"
+								class="mb-2 px-4 py-3 shadow-sm rounded hover:shadow-md transition-all duration-150 ease-in-out border border-pink-300 relative">
+								<!-- Edit and Delete Button -->
+								<% if (me.role==="ADMIN") { %>
+								<div id="action-buttons" class="hidden">
+									<button
+										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button">
+										Edit
+									</button>
+									<button
+										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button">
+										Delete
+									</button>
+								</div>
+								<% } %>
+								<div id="blur">
+									<h3 class="text-md font-semibold tracking-tight">
+										<%= task.title %>
+									</h3>
+									<% if (me.role==="ADMIN") { %>
+									<span class="text-sm text-gray-600 font-medium"
+										><%= task.createdAt %> by <%= task.creator.name %></span
+									>
+									<% } else { %>
+									<span class="text-sm text-gray-600"
+										><%= task.createdAt %></span
+									>
+									<% } %>
+									<p class="text-gray-700 mb-3 tracking-tight">
+										<%= task.description %>
+									</p>
+								</div>
+								<div class="flex w-full items-center justify-between">
+									<button
+										class="bg-blue-200 hover:bg-blue-300 text-gray-600 text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button"
+										onclick="moveToStatus('<%= task.id %>', 'OPEN')">
+										<< Open
+									</button>
+									<button
+										class="bg-green-200 hover:bg-green-300 text-gray-600 text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button"
+										onclick="moveToStatus('<%= task.id %>', 'DONE')">
+										Done >>
+									</button>
+								</div>
+							</li>
+							<% }) %>
+						</ul>
+					</div>
+					<div class="bg-white shadow-md rounded pb-8 mb-4">
+						<div class="flex h-1 bg-green-400 mb-6"></div>
+						<h2
+							class="text-xl font-bold text-gray-800 mb-4 px-4 tracking-tighter">
+							Completed Tasks
+							<span
+								class="px-3 py-1 ml-2 text-sm bg-green-600 text-white rounded-sm"
+								><%= done.length %></span
+							>
+						</h2>
+						<hr class="mb-4" />
+						<ul id="completed-tasks" class="list-none list-inside px-4">
+							<% done.forEach(task => { %>
+							<li
+								id="<%= task.id %>"
+								class="mb-2 px-4 py-3 shadow-sm rounded hover:shadow-md transition-all duration-150 ease-in-out border border-green-300 relative">
+								<!-- Edit and Delete Button -->
+								<% if (me.role==="ADMIN") { %>
+								<div id="action-buttons" class="hidden">
+									<button
+										class="bg-blue-500 hover:bg-gray-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button">
+										Edit
+									</button>
+									<button
+										class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button">
+										Delete
+									</button>
+								</div>
+								<% } %>
+								<div id="blur">
+									<h3 class="text-md font-semibold tracking-tight">
+										<%= task.title %>
+									</h3>
+									<% if (me.role==="ADMIN") { %>
+									<span class="text-sm text-gray-600 font-medium"
+										><%= task.createdAt %> by <%= task.creator.name %></span
+									>
+									<% } else { %>
+									<span class="text-sm text-gray-600"
+										><%= task.createdAt %></span
+									>
+									<% } %>
+									<p class="text-gray-700 mb-3 tracking-tight">
+										<%= task.description %>
+									</p>
+								</div>
+								<div class="flex w-full items-center justify-between">
+									<button
+										class="bg-blue-200 hover:bg-blue-300 text-gray-600 text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button"
+										onclick="moveToStatus('<%= task.id %>', 'OPEN')">
+										<< Re Open
+									</button>
+									<button
+										class="bg-pink-200 hover:bg-pink-300 text-gray-600 text-sm font-semi py-1 px-4 rounded focus:outline-none focus:shadow-outline"
+										type="button"
+										onclick="moveToStatus('<%= task.id %>', 'IN_PROGRESS')">
+										<< In Progress
+									</button>
+								</div>
+							</li>
+							<% }) %>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<% if (me.role==="ADMIN") { %>
+		<script>
+			// When the user hovers over a task, select div with id `action-buttons` which
+			// contains edit and delete button
+			$("li").hover(
+				function () {
+					$(this).find("#blur").addClass("blur-sm");
+					$(this)
+						.find("#action-buttons")
+						.removeClass("hidden")
+						.addClass("absolute top-0 right-0 mt-2 mr-2 z-10");
+				},
+				function () {
+					$(this).find("#blur").removeClass("blur-sm");
+					$(this)
+						.find("#action-buttons")
+						.addClass("hidden")
+						.removeClass("absolute top-0 right-0 mt-2 mr-2");
+				}
+			);
+		</script>
+		<% } %>
+		<script>
+			// Function to move a task to the next status
+			function moveToStatus(taskId, status) {
+				$.ajax({
+					url: `api/v1/task/${taskId}`,
+					type: "PUT",
+					data: {
+						status,
+					},
+					success: function (response) {
+						console.log(response);
+						location.reload();
+					},
+				});
+			}
+		</script>
+	</body>
+</html>
