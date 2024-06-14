@@ -49,3 +49,18 @@ export function authenticatedUI(
 	req.user = decoded;
 	next(); // Call next middleware
 }
+// Redirect to login page if user is authenticated
+export function onlyUnAuthenticated(
+	req: RequestWithUser,
+	res: Response,
+	next: NextFunction
+) {
+	const cookieToken = req.cookies.token;
+	const token = cookieToken;
+
+	if (token) {
+		return res.redirect("/");
+	}
+
+	next(); // Call next middleware
+}

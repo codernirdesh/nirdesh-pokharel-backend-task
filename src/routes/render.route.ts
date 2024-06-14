@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { RenderController } from "../controllers/render.controller";
-import { authenticatedUI } from "../middleware/auth.middleware";
+import {
+	authenticatedUI,
+	onlyUnAuthenticated,
+} from "../middleware/auth.middleware";
 import { roleUi } from "../middleware/role.middleware";
 
 const RenderRoute = Router();
 
 RenderRoute.get("/", authenticatedUI, RenderController.homepage);
-RenderRoute.get("/login", RenderController.loginpage);
+RenderRoute.get("/login", onlyUnAuthenticated, RenderController.loginpage);
 RenderRoute.get("/logout", authenticatedUI, RenderController.logout);
 RenderRoute.get(
 	"/add-task",
