@@ -2,7 +2,8 @@
   "name": "nirdesh-pokharel-backend-task",
   "module": "src/index.ts",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "build": "tsc && cp -r src/views dist/views"
   },
   "devDependencies": {
     "@eslint/js": "^9.4.0",
