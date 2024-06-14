@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { API_V1_PREFIX } from "../constants";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { CreateUserDto } from "../dto/create-user.dto";
+import { CreateUserDto, UpdateUserDto } from "../dto/create-user.dto";
 import { UserController } from "../controllers/user.controller";
 import { LoginDto } from "../dto/login.dto";
 import { authenticated } from "../middleware/auth.middleware";
@@ -16,6 +16,13 @@ UserRoute.post(
 	`${API_V1_PREFIX}/register`,
 	validationMiddleware(CreateUserDto),
 	UserController.register
+);
+UserRoute.post(
+	`${API_V1_PREFIX}/user/register`,
+	validationMiddleware(CreateUserDto),
+	authenticated,
+	role(Role.ADMIN),
+	UserController.registerByAdmin
 );
 UserRoute.post(
 	`${API_V1_PREFIX}/login`,
@@ -47,6 +54,19 @@ UserRoute.patch(
 	role(Role.ADMIN),
 	validationMiddleware(ChangeRoleDto),
 	UserController.changeRole
+);
+UserRoute.put(
+	`${API_V1_PREFIX}/user/:id`,
+	authenticated,
+	role(Role.ADMIN),
+	validationMiddleware(UpdateUserDto),
+	UserController.updateUser
+);
+UserRoute.delete(
+	`${API_V1_PREFIX}/user/:id`,
+	authenticated,
+	role(Role.ADMIN),
+	UserController.deleteUser
 );
 
 export default UserRoute;

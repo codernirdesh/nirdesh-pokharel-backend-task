@@ -9,7 +9,10 @@ export function authenticated(
 	res: Response,
 	next: NextFunction
 ) {
-	const token = req.header("authorization")?.split(" ")[1];
+	const bearerToken = req.header("authorization")?.split(" ")[1];
+	const cookieToken = req.cookies.token;
+	const token = bearerToken || cookieToken;
+
 	if (!token) {
 		throw CustomError(StatusCodes.UNAUTHORIZED, "Unauthorized", null);
 	}
@@ -21,5 +24,43 @@ export function authenticated(
 	}
 
 	req.user = decoded;
+	next(); // Call next middleware
+}
+
+export function authenticatedUI(
+	req: RequestWithUser,
+	res: Response,
+	next: NextFunction
+) {
+	const bearerToken = req.header("authorization")?.split(" ")[1];
+	const cookieToken = req.cookies.token;
+	const token = bearerToken || cookieToken;
+
+	if (!token) {
+		return res.redirect("/login");
+	}
+
+	// Verify token using JWtHelper
+	const decoded = JWTHelper.verifyToken(token);
+	if (!decoded) {
+		return res.redirect("/login");
+	}
+
+	req.user = decoded;
+	next(); // Call next middleware
+}
+// Redirect to login page if user is authenticated
+export function onlyUnAuthenticated(
+	req: RequestWithUser,
+	res: Response,
+	next: NextFunction
+) {
+	const cookieToken = req.cookies.token;
+	const token = cookieToken;
+
+	if (token) {
+		return res.redirect("/");
+	}
+
 	next(); // Call next middleware
 }

@@ -13,3 +13,16 @@ export function role(role: Role) {
 		next();
 	};
 }
+
+export function roleUi(role: Role) {
+	return function (req: RequestWithUser, res: Response, next: NextFunction) {
+		if (!req.user || req.user?.role !== role) {
+			return res.render("errors/401", {
+				message: "You are not authorized to view this page",
+				role: role,
+			});
+		}
+
+		next();
+	};
+}

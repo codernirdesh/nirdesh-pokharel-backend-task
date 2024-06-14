@@ -4,7 +4,8 @@ import prisma from "../prisma.client";
 import type { CreateTaskDto } from "../dto/create-task.dto";
 import type { RequestWithUser } from "../types/request-user.type";
 import { CustomError } from "../helpers/error.helper";
-import type { Task } from "@prisma/client";
+import { TaskStatus, type Task } from "@prisma/client";
+import { ChangeStatusDto } from "../dto/change-status";
 
 export class TaskController {
 	public static async createTask(
@@ -95,7 +96,8 @@ export class TaskController {
 		next: NextFunction
 	) {
 		const { id } = req.params;
-		const { title, description } = req.body as Partial<CreateTaskDto>;
+		const { title, description, status, assignedId } =
+			req.body as Partial<CreateTaskDto>;
 		try {
 			const taskExists = await prisma.task.findUnique({
 				where: {
@@ -106,13 +108,14 @@ export class TaskController {
 			if (!taskExists) {
 				throw CustomError(StatusCodes.NOT_FOUND, "Task not found", null);
 			}
-
 			const task = await prisma.task.update({
 				where: {
 					id,
 				},
 				data: {
 					title,
+					status: (status ? status : taskExists.status) as TaskStatus,
+					assignedId,
 					description,
 				},
 			});
@@ -199,6 +202,83 @@ export class TaskController {
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				data: tasks,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async changeStatus(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		const { status } = req.body as ChangeStatusDto;
+		const user = req.user!;
+		try {
+			const taskExists = await prisma.task.findUnique({
+				where: {
+					id,
+				},
+			});
+
+			if (!taskExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "Task not found", null);
+			}
+
+			// User can only change status of tasks assigned to them
+			// Admin can change status of any task
+			if (user.role !== "ADMIN" && taskExists.assignedId !== user.userId) {
+				throw CustomError(
+					StatusCodes.FORBIDDEN,
+					"Not authorized to change status of this task",
+					null
+				);
+			}
+
+			const task = await prisma.task.update({
+				where: { id },
+				data: {
+					status: status as TaskStatus,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: task,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async deleteTask(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		try {
+			const taskExists = await prisma.task.findUnique({
+				where: {
+					id,
+				},
+			});
+
+			if (!taskExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "Task not found", null);
+			}
+
+			await prisma.task.delete({
+				where: {
+					id,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: null,
 			});
 		} catch (error) {
 			next(error);

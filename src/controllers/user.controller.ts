@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { CreateUserDto } from "../dto/create-user.dto";
+import { CreateUserDto, UpdateUserDto } from "../dto/create-user.dto";
 import bcrypt from "bcryptjs";
 import prisma from "../prisma.client";
 import { Role } from "@prisma/client";
@@ -78,6 +78,63 @@ export class UserController {
 			next(error);
 		}
 	}
+	public static async registerByAdmin(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	) {
+		const { name, email, password, role } = req.body as CreateUserDto;
+		try {
+			// Check if the user already exists or not.
+			const userExists = await prisma.user.findUnique({
+				where: {
+					email,
+				},
+			});
+
+			if (userExists) {
+				throw CustomError(StatusCodes.CONFLICT, "User already exists", null);
+			}
+
+			// Hash password
+			const generatedSalt = await bcrypt.genSalt(10);
+			const hashedPassword = await bcrypt.hash(password, generatedSalt);
+
+			const user = await prisma.$transaction(async (tx) => {
+				// Save user to database
+				let user = await prisma.user.create({
+					data: {
+						name,
+						email,
+						password: hashedPassword,
+						role: role || Role.USER,
+					},
+					select: {
+						id: true,
+						name: true,
+						email: true,
+					},
+				});
+				return user;
+			});
+
+			if (!user) {
+				throw CustomError(
+					StatusCodes.INTERNAL_SERVER_ERROR,
+					"Something went wrong. Please try again later.",
+					null
+				);
+			}
+
+			return res.status(StatusCodes.CREATED).json({
+				status: "success",
+				message: "User registered successfully",
+				data: user,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 
 	public static async login(req: Request, res: Response, next: NextFunction) {
 		const { email, password } = req.body as LoginDto;
@@ -106,6 +163,13 @@ export class UserController {
 				userId: user.id,
 				email: user.email,
 				role: user.role,
+			});
+
+			res.cookie("token", token, {
+				httpOnly: true,
+				expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+				maxAge: 24 * 60 * 60 * 1000, // 24 hours
+				sameSite: "strict", // CSRF protection
 			});
 
 			return res.status(StatusCodes.OK).json({
@@ -213,6 +277,108 @@ export class UserController {
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				data: updatedUser,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async deleteUser(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		const user = req.user!;
+		try {
+			// usercannot remove self
+			if (id === user.userId) {
+				throw CustomError(
+					StatusCodes.FORBIDDEN,
+					"You cannot delete yourself",
+					null
+				);
+			}
+			// check if the user exists or not.
+			const userExists = await prisma.user.findUnique({
+				where: {
+					id,
+				},
+				omit: { password: true },
+			});
+			if (!userExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "User not found", null);
+			}
+			await prisma.$transaction(async (tx) => {
+				// assign all tasks to current user
+				await tx.task.updateMany({
+					where: {
+						assignedId: id,
+					},
+					data: {
+						assignedId: user.userId,
+					},
+				});
+
+				await tx.user.delete({
+					where: {
+						id,
+					},
+				});
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: userExists,
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
+
+	public static async updateUser(
+		req: RequestWithUser,
+		res: Response,
+		next: NextFunction
+	) {
+		const { id } = req.params;
+		const { name, email, role, password } = req.body as UpdateUserDto;
+		try {
+			const userExists = await prisma.user.findUnique({
+				where: {
+					id,
+				},
+			});
+
+			if (!userExists) {
+				throw CustomError(StatusCodes.NOT_FOUND, "User not found", null);
+			}
+
+			// Hash password
+			let hashedPassword;
+			if (password) {
+				const generatedSalt = await bcrypt.genSalt(10);
+				hashedPassword = await bcrypt.hash(password, generatedSalt);
+			}
+
+			const user = await prisma.user.update({
+				where: {
+					id,
+				},
+				data: {
+					name,
+					email,
+					role,
+					password: hashedPassword,
+				},
+				omit: {
+					password: true,
+				},
+			});
+
+			return res.status(StatusCodes.OK).json({
+				status: "success",
+				data: user,
 			});
 		} catch (error) {
 			next(error);
