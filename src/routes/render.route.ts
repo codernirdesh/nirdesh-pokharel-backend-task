@@ -10,6 +10,11 @@ const RenderRoute = Router();
 
 RenderRoute.get("/", authenticatedUI, RenderController.homepage);
 RenderRoute.get("/login", onlyUnAuthenticated, RenderController.loginpage);
+RenderRoute.get(
+	"/register",
+	onlyUnAuthenticated,
+	RenderController.registerPage
+);
 RenderRoute.get("/logout", authenticatedUI, RenderController.logout);
 RenderRoute.get(
 	"/add-task",

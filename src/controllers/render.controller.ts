@@ -80,6 +80,9 @@ export class RenderController {
 	public static loginpage(req: Request, res: Response) {
 		res.render("login", { title: "Login - Task Management" });
 	}
+	public static registerPage(req: Request, res: Response) {
+		res.render("register", { title: "Register - Task Management" });
+	}
 
 	public static logout(req: Request, res: Response) {
 		// Clear cookie
