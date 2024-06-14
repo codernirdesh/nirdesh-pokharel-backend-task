@@ -307,7 +307,7 @@
 			function moveToStatus(taskId, status) {
 				$.ajax({
 					url: `api/v1/task/${taskId}`,
-					type: "PUT",
+					type: "PATCH",
 					data: {
 						status,
 					},

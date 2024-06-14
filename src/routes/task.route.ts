@@ -31,7 +31,7 @@ TaskRoute.get(
 	authenticated,
 	TaskController.getTaskById
 );
-TaskRoute.put(
+TaskRoute.patch(
 	`${API_V1_PREFIX}/task/:id`,
 	validationMiddleware(ChangeStatusDto),
 	authenticated,
