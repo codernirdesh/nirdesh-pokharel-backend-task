@@ -14,9 +14,11 @@ export function validationMiddleware<T>(
 				const message = errors
 					.map((error) => Object.values(error.constraints || {}).join(", "))
 					.join(", ");
-				res.send(
-					CustomError(StatusCodes.BAD_REQUEST, "Validation Error", message)
-				);
+				res
+					.status(400)
+					.send(
+						CustomError(StatusCodes.BAD_REQUEST, "Validation Error", message)
+					);
 			} else {
 				req.body = dto as T;
 				next();
