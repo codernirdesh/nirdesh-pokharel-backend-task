@@ -14,7 +14,11 @@ RUN npm install --force
 # Copy the rest of the application code to the working directory
 COPY . .
 
+# Copy the startup script and Make the script executable
+COPY ./startup.sh .
+RUN chmod +x ./startup.sh
+
 # Expose port 3000
 EXPOSE 3000
 
-CMD ["./startup.sh"]
+CMD ["sh", "/app/startup.sh"]
