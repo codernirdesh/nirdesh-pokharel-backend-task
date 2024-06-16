@@ -1,7 +1,7 @@
 version: "3"
 services:
   postgres:
-    image: postgres:14.1-alpine
+    image: postgres:15.7-bullseye
     container_name: postgres
     hostname: postgres
     ports:
@@ -10,9 +10,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: task_management_db
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      POSTGRES_PORT: 5432
     restart: unless-stopped
+    healthcheck:
+      test:
+        ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   app:
     stdin_open: true
@@ -26,7 +32,3 @@ services:
     ports:
       - "3000:3000"
     restart: always
-
-volumes:
-  postgres-data:
-  pgadmin-data:
