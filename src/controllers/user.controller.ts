@@ -2,13 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import { CreateUserDto, UpdateUserDto } from "../dto/create-user.dto";
 import bcrypt from "bcryptjs";
 import prisma from "../prisma.client";
-import { Role } from "@prisma/client";
+import { Role, user } from "@prisma/client";
 import { CustomError } from "../helpers/error.helper";
 import { StatusCodes } from "http-status-codes";
 import { JWTHelper } from "../helpers/jwt.helper";
 import { LoginDto } from "../dto/login.dto";
 import { RequestWithUser } from "../types/request-user.type";
 import { ChangeRoleDto } from "../dto/change-role.dto";
+import { getResultFromCache, redisClient, setResultInCache } from "..";
 
 export class UserController {
 	public static async register(
@@ -191,18 +192,23 @@ export class UserController {
 	) {
 		const user = req.user;
 		try {
-			const currentUser = await prisma.user.findUnique({
-				where: {
-					id: user!.userId,
-				},
-				omit: {
-					password: true,
-				},
-			});
+			const result = (await getResultFromCache(
+				`user:${user!.userId}`,
+				async () => {
+					return await prisma.user.findUnique({
+						where: {
+							id: user!.userId,
+						},
+						omit: {
+							password: true,
+						},
+					});
+				}
+			)) as user;
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				message: "User details",
-				data: currentUser,
+				data: result,
 			});
 		} catch (error) {
 			next(error);
@@ -215,11 +221,14 @@ export class UserController {
 		next: NextFunction
 	) {
 		try {
-			const users = await prisma.user.findMany({
-				omit: {
-					password: true,
-				},
-			});
+			let users;
+			users = (await getResultFromCache("users", async () => {
+				return await prisma.user.findMany({
+					omit: {
+						password: true,
+					},
+				});
+			})) as user[];
 
 			return res.status(StatusCodes.OK).json({
 				status: "success",
@@ -237,14 +246,17 @@ export class UserController {
 	) {
 		const { id } = req.params;
 		try {
-			const user = await prisma.user.findUnique({
-				where: {
-					id,
-				},
-				omit: {
-					password: true,
-				},
-			});
+			let user;
+			user = (await getResultFromCache(`user:${id}`, async () => {
+				return await prisma.user.findUnique({
+					where: {
+						id,
+					},
+					omit: {
+						password: true,
+					},
+				});
+			})) as user;
 
 			return res.status(StatusCodes.OK).json({
 				status: "success",
@@ -273,6 +285,8 @@ export class UserController {
 					password: true,
 				},
 			});
+
+			await redisClient.del(`user:${id}`);
 
 			return res.status(StatusCodes.OK).json({
 				status: "success",
@@ -327,6 +341,8 @@ export class UserController {
 				});
 			});
 
+			await redisClient.del(`user:${id}`);
+
 			return res.status(StatusCodes.OK).json({
 				status: "success",
 				data: userExists,
@@ -355,25 +371,27 @@ export class UserController {
 			}
 
 			// Hash password
-			let hashedPassword;
+			let hashedPassword: string;
 			if (password) {
 				const generatedSalt = await bcrypt.genSalt(10);
 				hashedPassword = await bcrypt.hash(password, generatedSalt);
 			}
 
-			const user = await prisma.user.update({
-				where: {
-					id,
-				},
-				data: {
-					name,
-					email,
-					role,
-					password: hashedPassword,
-				},
-				omit: {
-					password: true,
-				},
+			const user = await setResultInCache(`user:${id}`, async () => {
+				return await prisma.user.update({
+					where: {
+						id,
+					},
+					data: {
+						name,
+						email,
+						role,
+						password: hashedPassword,
+					},
+					omit: {
+						password: true,
+					},
+				});
 			});
 
 			return res.status(StatusCodes.OK).json({

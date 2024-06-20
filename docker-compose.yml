@@ -1,7 +1,36 @@
 version: "3"
 services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    hostname: redis
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
+    healthcheck:
+      test:
+        ["CMD", "redis-cli", "-u", "redis://nirdesh:123456@redis:6379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    hostname: redis-insight
+    depends_on:
+      - redis
+    ports:
+      - 5540:5540
+    restart: always
+
   postgres:
-    image: postgres:15.7-bullseye
+    image: postgres:latest
     container_name: postgres
     hostname: postgres
     ports:
@@ -29,6 +58,7 @@ services:
       - .env.example
     depends_on:
       - postgres
+      - redis
     ports:
       - "3000:3000"
     restart: always
